@@ -10,6 +10,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import kotlin.text.Regex;
+
 public class MainActivity extends AppCompatActivity {
 
     private EditText textField;
@@ -61,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
         if (leftValue == null) {
             leftValue = value;
             operationType = OperationType.Addition;
-            SetText("+");
+            SetText("+ ");
         }
         else if (value != null) {
             rightValue = value;
@@ -77,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
         if (leftValue == null) {
             leftValue = value;
             operationType = OperationType.Subtraction;
+            SetText("– ");
         }
         else if (value != null)  {
             rightValue = value;
@@ -127,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Double ParseValue(String text) {
         try {
-            return Double.parseDouble(text);
+            return Double.parseDouble(text.replaceAll("\\D+", ""));
         }
         catch (NumberFormatException e) {
             return null;
