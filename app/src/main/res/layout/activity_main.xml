@@ -26,7 +26,7 @@
         android:layout_marginRight="16dp"
         android:layout_marginBottom="604dp"
         android:autofillHints="false"
-        android:hint="0.0"
+        android:hint="0"
         android:inputType="none"
         android:selectAllOnFocus="true"
         android:singleLine="true"
@@ -85,8 +85,9 @@
                 android:layout_height="80dp"
                 android:layout_margin="4dp"
                 android:layout_weight="1"
-                android:textSize="20sp"
-                android:text="@string/plusMinus" />
+                android:onClick="onPlusMinusClick"
+                android:text="@string/plusMinus"
+                android:textSize="20sp" />
 
             <Button
                 android:id="@+id/percent_btn"
@@ -263,8 +264,9 @@
                 android:layout_height="80dp"
                 android:layout_margin="4dp"
                 android:layout_weight="1"
-                android:textSize="20sp"
-                android:text="@string/point" />
+                android:onClick="onPointBtnClick"
+                android:text="@string/point"
+                android:textSize="20sp" />
 
             <Button
                 android:id="@+id/equals_btn"

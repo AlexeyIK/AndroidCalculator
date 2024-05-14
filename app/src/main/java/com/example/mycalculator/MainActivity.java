@@ -10,6 +10,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import java.util.Set;
+
 import kotlin.text.Regex;
 
 public class MainActivity extends AppCompatActivity {
@@ -17,7 +19,8 @@ public class MainActivity extends AppCompatActivity {
     private EditText textField;
     private Double leftValue;
     private Double rightValue;
-    private OperationType operationType;
+    private OperationType operationType = null;
+    private boolean wasOperationInput = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,7 +33,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onClearButtonClick(View view) {
-        textField.setText("");
+        operationType = null;
+        wasOperationInput = false;
+        SetText("");
     }
 
     public void onDigitBtnClick(View view) {
@@ -39,13 +44,31 @@ public class MainActivity extends AppCompatActivity {
 
             try {
                 int digit = Integer.parseInt(btnText);
-                String text = textField.getText().toString();
-                text += digit;
+                String text = "";
+
+                if (wasOperationInput) {
+                    text = String.valueOf(digit);
+                    wasOperationInput = false;
+                }
+                else {
+                    text = textField.getText().toString();
+                    text += digit;
+                }
+
                 textField.setText(text);
             }
             catch (NumberFormatException e) {
-                System.out.println("Pressed not a number");
+                throw new RuntimeException("Pressed not a number");
             }
+        }
+    }
+
+    public void onPointBtnClick(View view) {
+        String value = textField.getText().toString();
+
+        if (value.matches("\\d+\\.{0}")) {
+            value += ".";
+            textField.setText(value);
         }
     }
 
@@ -58,79 +81,105 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onAddBtnClick(View view) {
-        Double value = ParseValue(textField.getText().toString());
-
-        if (leftValue == null) {
-            leftValue = value;
-            operationType = OperationType.Addition;
-            SetText("+ ");
-        }
-        else if (value != null) {
-            rightValue = value;
-            double answer = leftValue - rightValue;
-            SetText(String.valueOf(answer));
-            leftValue = answer;
-        }
+        SetArithmeticOperation(OperationType.Addition);
     }
 
     public void onSubtractBtnClick(View view) {
-        Double value = ParseValue(textField.getText().toString());
-
-        if (leftValue == null) {
-            leftValue = value;
-            operationType = OperationType.Subtraction;
-            SetText("– ");
-        }
-        else if (value != null)  {
-            rightValue = value;
-            double answer = leftValue - rightValue;
-            SetText(String.valueOf(answer));
-            leftValue = answer;
-        }
+        SetArithmeticOperation(OperationType.Subtraction);
     }
 
     public void onMultiplyBtnClick(View view) {
-
+        SetArithmeticOperation(OperationType.Multiplying);
     }
 
     public void onDivideBtnClick(View view) {
-
+        SetArithmeticOperation(OperationType.Dividing);
     }
 
-    @SuppressLint("DefaultLocale")
+    private void SetArithmeticOperation(OperationType newOperation) {
+        Double value = ParseValue(textField.getText().toString());
+        if (value == null)
+            return;
+
+        if (operationType == null) {
+            leftValue = value;
+            switch (newOperation) {
+                case Addition:
+                    AddText("+");
+                    break;
+                case Subtraction:
+                    AddText("−");
+                    break;
+                case Dividing:
+                    AddText("÷");
+                    break;
+                case Multiplying:
+                    AddText("×");
+                    break;
+            }
+        }
+        else {
+            rightValue = CalculateAnswer(value);
+            SetArithmeticOperation(newOperation);
+        }
+
+        operationType = newOperation;
+        wasOperationInput = true;
+    }
+
     public void onEqualsBtnClick(View view) {
         if (leftValue == null)
             return;
 
         rightValue = ParseValue(textField.getText().toString());
 
-        if (rightValue == null)
+        CalculateAnswer(rightValue);
+        operationType = null;
+        wasOperationInput = false;
+    }
+
+    public void onPlusMinusClick(View view) {
+        Double value = ParseValue(textField.getText().toString());
+
+        if (value == null)
             return;
+
+        value *= -1;
+        SetText(String.valueOf(value));
+    }
+
+    private Double CalculateAnswer(Double rightValue) {
+        if (rightValue == null)
+            return null;
+
+        Double answer = null;
 
         switch (operationType) {
             case Addition:
-                SetText(String.format("%.0f", leftValue + rightValue));
+                answer = leftValue + rightValue;
                 break;
 
             case Subtraction:
-                SetText(String.format("%.0f", leftValue - rightValue));
+                answer = leftValue - rightValue;
                 break;
 
             case Dividing:
-                SetText(String.format("%.0f", leftValue / rightValue));
+                answer = leftValue / rightValue;
                 break;
 
             case Multiplying:
-                SetText(String.format("%.0f", leftValue * rightValue));
+                answer = leftValue * rightValue;
                 break;
         }
 
+        SetText(String.valueOf(answer));
         operationType = null;
+        return answer;
     }
 
     private Double ParseValue(String text) {
         try {
-            return Double.parseDouble(text.replaceAll("\\D+", ""));
+            return Double.parseDouble(text.replaceAll("\\^[0-9, -, +]", ""));
         }
         catch (NumberFormatException e) {
             return null;
@@ -138,6 +187,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void SetText(String text) {
+        textField.setText(text);
+    }
+
+    private void AddText(String textToAdd) {
+        String text = textField.getText().toString();
+        text += textToAdd;
         textField.setText(text);
     }
 }
