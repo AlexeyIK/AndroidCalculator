@@ -4,12 +4,14 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.icu.text.NumberFormat;
 import android.os.Bundle;
 import android.os.DeadObjectException;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import java.util.Locale;
 import java.util.Set;
 
 import kotlin.text.Regex;
@@ -29,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
 
         textField = findViewById(R.id.textLine);
         textField.setShowSoftInputOnFocus(false);
-        textField.setCursorVisible(false);
+//        textField.setCursorVisible(false);
     }
 
     public void onClearButtonClick(View view) {
@@ -44,18 +46,14 @@ public class MainActivity extends AppCompatActivity {
 
             try {
                 int digit = Integer.parseInt(btnText);
-                String text = "";
 
                 if (wasOperationInput) {
-                    text = String.valueOf(digit);
+                    SetText(String.valueOf(digit));
                     wasOperationInput = false;
                 }
                 else {
-                    text = textField.getText().toString();
-                    text += digit;
+                    AddText(String.valueOf(digit));
                 }
-
-                textField.setText(text);
             }
             catch (NumberFormatException e) {
                 throw new RuntimeException("Pressed not a number");
@@ -67,8 +65,7 @@ public class MainActivity extends AppCompatActivity {
         String value = textField.getText().toString();
 
         if (value.matches("\\d+\\.{0}")) {
-            value += ".";
-            textField.setText(value);
+            AddText(".");
         }
     }
 
@@ -76,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
         if (textField.getText().length() > 0) {
             String text = textField.getText().toString();
             text = text.substring(0, text.length() - 1);
-            textField.setText(text);
+            SetText(text);
         }
     }
 
@@ -128,10 +125,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onEqualsBtnClick(View view) {
-        if (leftValue == null)
+        if (leftValue == null || operationType == null)
             return;
 
         rightValue = ParseValue(textField.getText().toString());
+
+        if (rightValue == null)
+            return;
 
         CalculateAnswer(rightValue);
         operationType = null;
@@ -148,6 +148,20 @@ public class MainActivity extends AppCompatActivity {
         SetText(String.valueOf(value));
     }
 
+    public void onPercentBtnClick(View view) {
+        if (wasOperationInput || operationType == null)
+            return;
+
+        Double value = ParseValue(textField.getText().toString());
+        if (value == null)
+            return;
+
+        value = leftValue * (value / 100);
+        SetText(String.valueOf(value));
+        rightValue = value;
+    }
+
+    @SuppressLint("DefaultLocale")
     private Double CalculateAnswer(Double rightValue) {
         if (rightValue == null)
             return null;
@@ -172,7 +186,10 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
 
-        SetText(String.valueOf(answer));
+        NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.getDefault());
+        numberFormat.setGroupingUsed(false);
+        numberFormat.setMaximumFractionDigits(9);
+        SetText(numberFormat.format(answer));
         operationType = null;
         return answer;
     }
@@ -188,11 +205,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void SetText(String text) {
         textField.setText(text);
+        textField.setSelection(textField.getText().length());
     }
 
     private void AddText(String textToAdd) {
         String text = textField.getText().toString();
         text += textToAdd;
         textField.setText(text);
+        textField.setSelection(textField.getText().length());
     }
 }

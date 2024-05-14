@@ -27,7 +27,7 @@
         android:layout_marginBottom="604dp"
         android:autofillHints="false"
         android:hint="0"
-        android:inputType="none"
+        android:inputType="numberDecimal"
         android:selectAllOnFocus="true"
         android:singleLine="true"
         android:textAlignment="textEnd"
@@ -41,8 +41,8 @@
 
     <ImageButton
         android:id="@+id/backspace"
-        android:layout_width="100dp"
-        android:layout_height="60dp"
+        android:layout_width="90dp"
+        android:layout_height="48dp"
         android:layout_marginBottom="12dp"
         android:background="@drawable/circled_button"
         android:contentDescription="@string/backspace"
@@ -95,8 +95,9 @@
                 android:layout_height="80dp"
                 android:layout_margin="4dp"
                 android:layout_weight="1"
-                android:textSize="20sp"
-                android:text="@string/percent" />
+                android:onClick="onPercentBtnClick"
+                android:text="@string/percent"
+                android:textSize="20sp" />
 
             <Button
                 android:id="@+id/divide_btn"
